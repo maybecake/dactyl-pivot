@@ -7,3 +7,4 @@ things
 .lein-*
 
 /target
+.clj-kondo
