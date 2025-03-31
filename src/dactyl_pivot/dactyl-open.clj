@@ -14,7 +14,7 @@
 ;; Shape parameters ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-(def nrows 5)
+(def nrows 4)
 (def ncols 7)
 
 (def α (/ π 10))                        ; curvature of the columns
@@ -23,11 +23,11 @@
 (def centercol 4)                       ; controls left-right tilt / tenting (higher number is more tenting)
 (def tenting-angle (/ π 12))            ; or, change this for more precise tenting control
 
-(def pinky-15u true)                    ; controls whether the outer column uses 1.5u keys
+(def pinky-15u false)                    ; controls whether the outer column uses 1.5u keys
 (def first-15u-row 0)                   ; controls which should be the first row to have 1.5u keys on the outer column
 (def last-15u-row 3)                    ; controls which should be the last row to have 1.5u keys on the outer column
 
-(def extra-row false)                   ; adds an extra bottom row to the outer columns
+(def extra-row true)                   ; adds an extra bottom row to the outer columns
 (def inner-column true)                 ; adds an extra inner column (two less rows than nrows)
 
 (def column-style :standard)
@@ -437,13 +437,14 @@
 ;; Mini Thumb ;;
 ;;;;;;;;;;;;;;;;
 
+;; Closest to fingers
 (defn minithumb-tr-place [shape]
   (->> shape
        (rotate (deg2rad 0) [1 0 0])
-       (rotate (deg2rad -5) [0 1 0])
-       (rotate (deg2rad  10) [0 0 1])
+       (rotate (deg2rad -10) [0 1 0])
+       (rotate (deg2rad  15) [0 0 1])
        (translate thumborigin)
-       (translate [-8 -24 4])))
+       (translate [-4 -25 4])))
 
 (defn minithumb-tl-place [shape]
   (->> shape
@@ -452,6 +453,8 @@
        (rotate (deg2rad  25) [0 0 1]) ; original 10
        (translate thumborigin)
        (translate [-31 -13 3]))) ; original 1.5u (translate [-32 -15 -2])))
+
+;; Bottom mounting hole
 (defn minithumb-mr-place [shape]
   (->> shape
        (rotate (deg2rad  -2) [1 0 0])
@@ -459,20 +462,24 @@
        (rotate (deg2rad  25) [0 0 1])
        (translate thumborigin)
        (translate [-22 -36 -3])))
+
+;; Furthest away (bottom row)
 (defn minithumb-br-place [shape]
   (->> shape
-       (rotate (deg2rad -6) [1 0 0])
-       (rotate (deg2rad -36) [0 1 0])
-       (rotate (deg2rad  35) [0 0 1])
+       (rotate (deg2rad -2) [1 0 0])
+       (rotate (deg2rad -32) [0 1 0])
+       (rotate (deg2rad  38) [0 0 1])
        (translate thumborigin)
-       (translate [-35 -45 -12])))
+       (translate [-40 -46 -12])))
+
+;; Top mounting hole
 (defn minithumb-bl-place [shape]
   (->> shape
        (rotate (deg2rad  2) [1 0 0])
        (rotate (deg2rad -36) [0 1 0])
        (rotate (deg2rad  35) [0 0 1])
        (translate thumborigin)
-       (translate [-46 -22 -7]))) ;        (translate [-51 -25 -12])))
+       (translate [-48 -22 -8]))) ;        (translate [-51 -25 -12])))
 
 (defn minithumb-1x-layout [shape]
   (union
