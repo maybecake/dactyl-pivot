@@ -19,15 +19,14 @@ than 2 rows below the home row.
 
 ## Features
 
-* A pivoting thumb cluster.
-* Adjustable tenting.
-* No more hollowing sound caused by the big case.
-* Greater flexibility to key placement. We don't need to worry about
-installation clearance.
-* 3d printing of these cases takes less plastic, reducing waste.
-* When customizing the design, each part can be experimented on
-separately, leading to faster prototyping and less waste.  
-
+- A pivoting thumb cluster.
+- Adjustable tenting.
+- No more hollowing sound caused by the big case.
+- Greater flexibility to key placement. We don't need to worry about
+  installation clearance.
+- 3d printing of these cases takes less plastic, reducing waste.
+- When customizing the design, each part can be experimented on
+  separately, leading to faster prototyping and less waste.
 
 ## Two versions
 
@@ -35,7 +34,7 @@ In this repo, we try to bring the thumb keys back closer to the thumb resting po
 1.5 to 2 rows below home row, at the same time keep the thumb cluster low and curves
 downwards, reducing stress on the thumb. During this process we created two versions:
 
-dactyl-closed.clj 
+dactyl-closed.clj
 
 This file describe a fulled enclosed case just like the Dactyl Manuform. We managed
 to bring thumb keys much closer to the home row. Unfortunately, not quite close as
@@ -49,37 +48,50 @@ dactyl-open.clj
 This file describe an open frame and multi-part design. This design not only allows
 us to bring the thumb keys closer to the home row, it offers other benefits:
 
-* A pivoting and adjustable thumb cluster.
-* Adjustable tenting.
-* No more hollowing sound caused by the big case.
-* 3d printing of these cases takes less plastic, and less time.
-* When customize the design, each part can be experimented on
-seperatedly, leading to faster prototyping.  
-
+- A pivoting and adjustable thumb cluster.
+- Adjustable tenting.
+- No more hollowing sound caused by the big case.
+- 3d printing of these cases takes less plastic, and less time.
+- When customize the design, each part can be experimented on
+  seperatedly, leading to faster prototyping.
 
 ### Generating a Design
 
+**Using Docker**
+
+- Build the Docker image:
+  ```bash
+  docker build -t dactyl-pivot .
+  ```
+- Run the container with your current directory mounted:
+  ```bash
+  docker run -it -v ${PWD}:/app dactyl-pivot
+  ```
+- Inside the container, follow the "Generating the design" steps above
+
 **Setting up the Clojure environment**
-* [Install the Clojure runtime](https://clojure.org)
-* [Install the Leiningen project manager](http://leiningen.org/)
-* [Install OpenSCAD](http://www.openscad.org/)
+
+- [Install the Clojure runtime](https://clojure.org)
+- [Install the Leiningen project manager](http://leiningen.org/)
+- [Install OpenSCAD](http://www.openscad.org/)
 
 **Generating the design**
-* cd into the root of the project
-* Run `lein repl`
-* Load the file `(load-file "src/dactyl_pivot/dactyl.clj")`
-* This will generate or regenerate the `things/*.scad` files
-* Use OpenSCAD to open a `.scad` file.
-* Make changes to design, repeat `load-file`, OpenSCAD will watch for changes and rerender.
-* When done, use OpenSCAD to export STL files
+
+- cd into the root of the project
+- Run `lein repl`
+- Load the file `(load-file "src/dactyl_pivot/dactyl-open.clj")`
+- This will generate or regenerate the `things/*.scad` files
+- Use OpenSCAD to open a `.scad` file.
+- Make changes to design, repeat `load-file`, OpenSCAD will watch for changes and rerender.
+- When done, use OpenSCAD to export STL files
 
 **Tips**
-* [Some other ways to evaluate the clojure design file](http://stackoverflow.com/a/28213489)
-* [Example designing with clojure](http://adereth.github.io/blog/2014/04/09/3d-printing-with-clojure/)
 
+- [Some other ways to evaluate the clojure design file](http://stackoverflow.com/a/28213489)
+- [Example designing with clojure](http://adereth.github.io/blog/2014/04/09/3d-printing-with-clojure/)
 
 ## License
 
 Copyright © 2015 Matthew Adereth
 
-The source code for generating the models (everything excluding the [things/](things/) and [resources/](resources/) directories is distributed under the [GNU AFFERO GENERAL PUBLIC LICENSE Version 3](LICENSE).  The generated models and PCB designs are distributed under the [Creative Commons Attribution-ShareAlike License Version 4.0](LICENSE-models).
+The source code for generating the models (everything excluding the [things/](things/) and [resources/](resources/) directories is distributed under the [GNU AFFERO GENERAL PUBLIC LICENSE Version 3](LICENSE). The generated models and PCB designs are distributed under the [Creative Commons Attribution-ShareAlike License Version 4.0](LICENSE-models).
