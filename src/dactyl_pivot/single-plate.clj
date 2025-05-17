@@ -8,43 +8,43 @@
 (def default-params
   {:keyswitch-height 14.15
    :keyswitch-width 14.15
-   :sa-profile-key-height 12.7
    :plate-thickness 4
    :side-nub-thickness 4
    :retention-tab-thickness 1.5
+   :wall-thickness 5
    :create-side-nubs? true})
 
 ;; Default values for closed version
 (def default-params-closed
   {:keyswitch-height 14.15
    :keyswitch-width 14.15
-   :sa-profile-key-height 12.7
    :plate-thickness 4
    :side-nub-thickness 4
    :retention-tab-thickness 1.5
+   :wall-thickness 1.8
    :create-side-nubs? true})
 
 (defn create-single-plate [{:keys [keyswitch-height
                                  keyswitch-width
-                                 sa-profile-key-height
                                  plate-thickness
                                  side-nub-thickness
                                  retention-tab-thickness
+                                 wall-thickness
                                  create-side-nubs?]
                           :or {create-side-nubs? true}}]
     (let [retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness)
-          mount-width (+ keyswitch-width 3)
-          mount-height (+ keyswitch-height 3)
+          mount-width (+ keyswitch-width (* 2 wall-thickness))
+          mount-height (+ keyswitch-height (* 2 wall-thickness))
           
           ;; Creates the top wall of the switch cutout
-          top-wall (->> (cube (+ keyswitch-width 3) 1.5 plate-thickness)
+          top-wall (->> (cube mount-width wall-thickness plate-thickness)
                         (translate [0
-                                    (+ (/ 1.5 2) (/ keyswitch-height 2))
+                                    (+ (/ wall-thickness 2) (/ keyswitch-height 2))
                                     (/ plate-thickness 2)]))
           
           ;; Creates the left wall of the switch cutout
-          left-wall (->> (cube 1.5 (+ keyswitch-height 3) plate-thickness)
-                         (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
+          left-wall (->> (cube wall-thickness mount-height plate-thickness)
+                         (translate [(+ (/ wall-thickness 2) (/ keyswitch-width 2))
                                      0
                                      (/ plate-thickness 2)]))
           
@@ -52,42 +52,49 @@
           side-nub (->> (binding [*fn* 30] (cylinder 0.75 2.75))  ;; Creates a cylinder for the nub
                         (rotate (/ π 2) [1 0 0])  ;; Rotates to horizontal position
                         (translate [(+ (/ keyswitch-width 2)) 0 1])  ;; Positions at edge of switch
-                        (hull (->> (cube 1.5 2.75 plate-thickness)  ;; Creates the main nub body
-                                   (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
+                        (hull (->> (cube wall-thickness 2.75 plate-thickness)  ;; Creates the main nub body
+                                   (translate [(+ (/ wall-thickness 2) (/ keyswitch-width 2))
                                                0
                                                (/ side-nub-thickness 2)])))
                         (translate [0 0 (- plate-thickness side-nub-thickness)]))  ;; Adjusts height
           
           ;; Combines the walls and optional side nub into one half of the plate
-          plate-half (union top-wall left-wall (if create-side-nubs? (with-fn 100 side-nub)))]
+          plate-half (union top-wall left-wall (if create-side-nubs? (with-fn 100 side-nub)))
+          
+          ;; Creates the complete plate by mirroring the half plate in both X and Y directions
+          plate (union plate-half
+                      (->> plate-half
+                           (mirror [1 0 0])  ;; Mirror across X axis
+                           (mirror [0 1 0])))]  ;; Mirror across Y axis
       
-      ;; Creates the complete plate by mirroring the half plate in both X and Y directions
-      (union plate-half
-             (->> plate-half
-                  (mirror [1 0 0])  ;; Mirror across X axis
-                  (mirror [0 1 0])))))  ;; Mirror across Y axis
+      ;; Return a map containing both the plate and its dimensions
+      {:plate plate
+       :dimensions {:mount-width mount-width
+                   :mount-height mount-height
+                   :wall-thickness wall-thickness
+                   :plate-thickness plate-thickness}}))
 
 (defn create-single-plate-closed [{:keys [keyswitch-height
                                         keyswitch-width
-                                        sa-profile-key-height
                                         plate-thickness
                                         side-nub-thickness
                                         retention-tab-thickness
+                                        wall-thickness
                                         create-side-nubs?]
                                  :or {create-side-nubs? true}}]
     (let [retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness)
-          mount-width (+ keyswitch-width 3)
-          mount-height (+ keyswitch-height 3)
+          mount_width (+ keyswitch-width (* 2 wall-thickness))
+          mount_height (+ keyswitch-height (* 2 wall-thickness))
           
           ;; Creates the top wall of the switch cutout with closed version dimensions
-          top-wall (->> (cube (+ keyswitch-width 3) 1.5 (+ plate-thickness 0.5))
+          top-wall (->> (cube mount_width wall-thickness (+ plate-thickness 0.5))
                         (translate [0
-                                    (+ (/ 1.5 2) (/ keyswitch-height 2))
+                                    (+ (/ wall-thickness 2) (/ keyswitch-height 2))
                                     (- (/ plate-thickness 2) 0.25)]))
           
           ;; Creates the left wall of the switch cutout with closed version dimensions
-          left-wall (->> (cube 1.8 (+ keyswitch-height 3) (+ plate-thickness 0.5))
-                         (translate [(+ (/ 1.8 2) (/ keyswitch-width 2))
+          left-wall (->> (cube wall-thickness mount_height (+ plate-thickness 0.5))
+                         (translate [(+ (/ wall-thickness 2) (/ keyswitch-width 2))
                                      0
                                      (- (/ plate-thickness 2) 0.25)]))
           
@@ -95,8 +102,8 @@
           side-nub (->> (binding [*fn* 30] (cylinder 1 2.75))
                         (rotate (/ π 2) [1 0 0])
                         (translate [(+ (/ keyswitch-width 2)) 0 1])
-                        (hull (->> (cube 1.5 2.75 side-nub-thickness)
-                                   (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
+                        (hull (->> (cube wall-thickness 2.75 side-nub-thickness)
+                                   (translate [(+ (/ wall-thickness 2) (/ keyswitch-width 2))
                                                0
                                                (/ side-nub-thickness 2)])))
                         (translate [0 0 (- plate-thickness side-nub-thickness)]))
@@ -110,16 +117,23 @@
           top-nub-pair (union top-nub
                              (->> top-nub
                                   (mirror [1 0 0])
-                                  (mirror [0 1 0])))]
+                                  (mirror [0 1 0])))
+          
+          ;; Creates the complete plate with retention tab cutouts
+          plate (difference
+                 (union plate-half
+                        (->> plate-half
+                             (mirror [1 0 0])
+                             (mirror [0 1 0])))
+                 (->> top-nub-pair
+                      (rotate (/ π 2) [0 0 1])))]
       
-      ;; Creates the complete plate with retention tab cutouts
-      (difference
-       (union plate-half
-              (->> plate-half
-                   (mirror [1 0 0])
-                   (mirror [0 1 0])))
-       (->> top-nub-pair
-            (rotate (/ π 2) [0 0 1])))))
+      ;; Return a map containing both the plate and its dimensions
+      {:plate plate
+       :dimensions {:mount-width mount_width
+                   :mount-height mount_height
+                   :wall-thickness wall-thickness
+                   :plate-thickness plate-thickness}}))
 
 ;; Generate the SCAD files with both versions
 (do
@@ -131,6 +145,6 @@
         (write-scad
          (union
           ;; Open version on the left
-          (translate [-15 0 0] (create-single-plate default-params))
+          (translate [-15 0 0] (:plate (create-single-plate default-params)))
           ;; Closed version on the right
-          (translate [15 0 0] (create-single-plate-closed default-params-closed)))))) 
+          (translate [15 0 0] (:plate (create-single-plate-closed default-params-closed))))))) 

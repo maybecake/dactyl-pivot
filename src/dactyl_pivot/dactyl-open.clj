@@ -32,17 +32,17 @@
 (def extra-row true)                   ; adds an extra bottom row to the outer columns
 (def inner-column true)                 ; adds an extra inner column (two less rows than nrows)
 
-(def column-style :standard)
+(def column-style :orthographic) ;; :fixed, :orthographic
 
 (defn column-offset [column]
   (if inner-column
     (cond (<= column 1) [0 -2 0]
           (= column 3) [0 2.82 -4.5]
-          (= column 5) [0 -12 5.64]    ; original [0 -5.8 5.64]
+          (= column 5) [0 -12 5.64]
           (> column 5) [0 -12 7.8]
           :else [0 0 0])
     (cond (= column 2) [0 2.82 -4.5]
-          (= column 4) [0 -12 5.64]    ; original [0 -5.8 5.64]
+          (= column 4) [0 -12 5.64]
           (> column 4) [0 -12 7.8]
           :else [0 0 0])))
 
@@ -53,7 +53,7 @@
 (def extra-width 2)                     ; extra space between the base of keys; original= 2
 (def extra-height 0.5)                  ; original= 0.5
 
-(def wall-z-offset -8)                 ; length of the first downward-sloping part of the wall (negative)
+(def wall-z-offset -8)                  ; length of the first downward-sloping part of the wall (negative)
 (def wall-xy-offset 5)                  ; offset in the x and/or y direction for the first downward-sloping part of the wall (negative)
 (def wall-thickness 2)                  ; wall thickness parameter; originally 5
 
@@ -63,7 +63,7 @@
 ;; Fixed-z overrides the z portion of the column ofsets above.
 ;; NOTE: THIS DOESN'T WORK QUITE LIKE I'D HOPED.
 (def fixed-angles [(deg2rad 10) (deg2rad 10) 0 0 0 (deg2rad -15) (deg2rad -15)])
-(def fixed-x [-41.5 -22.5 0 20.3 41.4 65.5 89.6])  ; relative to the middle finger
+(def fixed-x [-41.5 -22.5 0 20.3 41.4 65.5 89.6])  ; relative to the middle finger (side by side of columns)
 (def fixed-z [12.1    8.3 0  5   10.7 14.5 17.5])
 (def fixed-tenting (deg2rad 0))
 
@@ -84,7 +84,7 @@
 ;;;;;;;;;;;;;;;;;
 
 ;; Standard dimensions for Cherry MX style switches
-(def keyswitch-height 14.15) ;; Was 14.1, then 14.25
+(def keyswitch-height 14.15)
 (def keyswitch-width 14.15)
 
 ;; Height of SA profile keycaps
@@ -92,6 +92,7 @@
 
 ;; Plate dimensions and thicknesses
 (def plate-thickness 4)  ;; Thickness of the mounting plate
+(def wall-thickness 2)  ;; Thickness of the walls
 (def side-nub-thickness 4)  ;; Thickness of the side nubs that help secure the switch
 (def retention-tab-thickness 1.5)  ;; Thickness of the switch retention tabs
 (def retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness))  ;; Space for retention tabs
@@ -99,19 +100,20 @@
 (def mount-height (+ keyswitch-height 3))  ;; Total height including clearance
 
 ;; Create the single plate using the parameters defined above
-(def single-plate
+(def single-plate-data
   (create-single-plate {:keyswitch-height keyswitch-height
                        :keyswitch-width keyswitch-width
-                       :sa-profile-key-height sa-profile-key-height
                        :plate-thickness plate-thickness
+                       :wall-thickness wall-thickness
                        :side-nub-thickness side-nub-thickness
                        :retention-tab-thickness retention-tab-thickness
                        :create-side-nubs? create-side-nubs?}))
 
-;;;;;;;;;;;;;;;;
-;; SA Keycaps ;;
-;;;;;;;;;;;;;;;;
+(def single-plate (:plate single-plate-data))
+(def mount-width (:mount-width (:dimensions single-plate-data)))
+(def mount-height (:mount-height (:dimensions single-plate-data)))
 
+;; SA Keycaps - used to visually (manually) inspect for collisions.
 (def sa-cap (create-sa-cap plate-thickness))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
