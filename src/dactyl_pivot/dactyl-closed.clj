@@ -4,7 +4,9 @@
               [scad-clj.scad :refer :all]
               [scad-clj.model :refer :all]
               [unicode-math.core :refer :all]
-              [clojure.java.io :as io]))
+              [clojure.java.io :as io]
+              [dactyl-pivot.sa-keycaps :refer [create-sa-cap]]
+              [dactyl-pivot.single-plate :refer [create-single-plate-closed]]))
 
 
 (defn deg2rad [degrees]
@@ -83,93 +85,36 @@
 ;; Switch Hole ;;
 ;;;;;;;;;;;;;;;;;
 
-(def keyswitch-height 14.15)
+;; Standard dimensions for Cherry MX style switches
+(def keyswitch-height 14.15) ;; Was 14.1, then 14.25
 (def keyswitch-width 14.15)
 
+;; Height of SA profile keycaps
 (def sa-profile-key-height 12.7)
 
-(def plate-thickness 4)
-(def side-nub-thickness 4)
-(def retention-tab-thickness 1.5)
-(def retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness))
-(def mount-width (+ keyswitch-width 3.2))
-(def mount-height (+ keyswitch-height 2.7))
+;; Plate dimensions and thicknesses
+(def plate-thickness 4)  ;; Thickness of the mounting plate
+(def side-nub-thickness 4)  ;; Thickness of the side nubs that help secure the switch
+(def retention-tab-thickness 1.5)  ;; Thickness of the switch retention tabs
+(def retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness))  ;; Space for retention tabs
+(def mount-width (+ keyswitch-width 3))  ;; Total width including clearance
+(def mount-height (+ keyswitch-height 3))  ;; Total height including clearance
 
+;; Create the single plate using the parameters defined above
 (def single-plate
-  (let [top-wall (->> (cube (+ keyswitch-width 3) 1.5 (+ plate-thickness 0.5))
-                      (translate [0
-                                  (+ (/ 1.5 2) (/ keyswitch-height 2))
-                                  (- (/ plate-thickness 2) 0.25)]))
-        left-wall (->> (cube 1.8 (+ keyswitch-height 3) (+ plate-thickness 0.5))
-                       (translate [(+ (/ 1.8 2) (/ keyswitch-width 2))
-                                   0
-                                   (- (/ plate-thickness 2) 0.25)]))
-        side-nub (->> (binding [*fn* 30] (cylinder 1 2.75))
-                      (rotate (/ π 2) [1 0 0])
-                      (translate [(+ (/ keyswitch-width 2)) 0 1])
-                      (hull (->> (cube 1.5 2.75 side-nub-thickness)
-                                 (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
-                                             0
-                                             (/ side-nub-thickness 2)])))
-                      (translate [0 0 (- plate-thickness side-nub-thickness)]))
-        plate-half (union top-wall left-wall (if create-side-nubs? (with-fn 100 side-nub)))
-        top-nub (->> (cube 5 5 retention-tab-hole-thickness)
-                     (translate [(+ (/ keyswitch-width 2.5)) 0 (- (/ retention-tab-hole-thickness 2) 0.5)]))
-        top-nub-pair (union top-nub
-                            (->> top-nub
-                                 (mirror [1 0 0])
-                                 (mirror [0 1 0])))]
-    (difference
-     (union plate-half
-            (->> plate-half
-                 (mirror [1 0 0])
-                 (mirror [0 1 0])))
-     (->>
-      top-nub-pair
-      (rotate (/ π 2) [0 0 1])))))
+  (create-single-plate-closed {:keyswitch-height keyswitch-height
+                              :keyswitch-width keyswitch-width
+                              :sa-profile-key-height sa-profile-key-height
+                              :plate-thickness plate-thickness
+                              :side-nub-thickness side-nub-thickness
+                              :retention-tab-thickness retention-tab-thickness
+                              :create-side-nubs? create-side-nubs?}))
 
 ;;;;;;;;;;;;;;;;
 ;; SA Keycaps ;;
 ;;;;;;;;;;;;;;;;
 
-(def sa-length 18.25)
-(def sa-double-length 37.5)
-(def sa-cap {1 (let [bl2 (/ 18.5 2)
-                     m (/ 17 2)
-                     key-cap (hull (->> (polygon [[bl2 bl2] [bl2 (- bl2)] [(- bl2) (- bl2)] [(- bl2) bl2]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 0.05]))
-                                   (->> (polygon [[m m] [m (- m)] [(- m) (- m)] [(- m) m]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 6]))
-                                   (->> (polygon [[6 6] [6 -6] [-6 -6] [-6 6]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 12])))]
-                 (->> key-cap
-                      (translate [0 0 (+ 5 plate-thickness)])
-                      (color [220/255 163/255 163/255 1])))
-             2 (let [bl2 sa-length
-                     bw2 (/ 18.25 2)
-                     key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 0.05]))
-                                   (->> (polygon [[6 16] [6 -16] [-6 -16] [-6 16]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 12])))]
-                 (->> key-cap
-                      (translate [0 0 (+ 5 plate-thickness)])
-                      (color [127/255 159/255 127/255 1])))
-             1.5 (let [bl2 (/ 18.25 2)
-                       bw2 (/ 27.94 2)
-                       key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
-                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                          (translate [0 0 0.05]))
-                                     (->> (polygon [[11 6] [-11 6] [-11 -6] [11 -6]])
-                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                          (translate [0 0 12])))]
-                   (->> key-cap
-                        (translate [0 0 (+ 5 plate-thickness)])
-                        (color [240/255 223/255 175/255 1])))})
+(def sa-cap (create-sa-cap plate-thickness))
 
 ;; Fill the keyholes instead of placing a a keycap over them
 (def keyhole-fill (->> (cube keyswitch-height keyswitch-width plate-thickness)
@@ -945,7 +890,9 @@
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
 
+;; Create the output directories
 (.mkdir (java.io.File. "things"))
+(.mkdir (java.io.File. "things/closed"))
 
 (spit "things/closed/right.scad"
       (write-scad model-right))
