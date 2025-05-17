@@ -4,7 +4,8 @@
               [scad-clj.scad :refer :all]
               [scad-clj.model :refer :all]
               [unicode-math.core :refer :all]
-              [clojure.java.io :as io]))
+              [clojure.java.io :as io]
+              [dactyl-pivot.single-plate :refer [create-single-plate]]))
 
 
 (defn deg2rad [degrees]
@@ -81,41 +82,30 @@
 ;; Switch Hole ;;
 ;;;;;;;;;;;;;;;;;
 
+;; Standard dimensions for Cherry MX style switches
 (def keyswitch-height 14.15) ;; Was 14.1, then 14.25
 (def keyswitch-width 14.15)
 
+;; Height of SA profile keycaps
 (def sa-profile-key-height 12.7)
 
-(def plate-thickness 4)
-(def side-nub-thickness 4)
-(def retention-tab-thickness 1.5)
-(def retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness))
-(def mount-width (+ keyswitch-width 3))
-(def mount-height (+ keyswitch-height 3))
+;; Plate dimensions and thicknesses
+(def plate-thickness 4)  ;; Thickness of the mounting plate
+(def side-nub-thickness 4)  ;; Thickness of the side nubs that help secure the switch
+(def retention-tab-thickness 1.5)  ;; Thickness of the switch retention tabs
+(def retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness))  ;; Space for retention tabs
+(def mount-width (+ keyswitch-width 3))  ;; Total width including clearance
+(def mount-height (+ keyswitch-height 3))  ;; Total height including clearance
 
+;; Create the single plate using the parameters defined above
 (def single-plate
-    (let [top-wall (->> (cube (+ keyswitch-width 3) 1.5 plate-thickness)
-                        (translate [0
-                                    (+ (/ 1.5 2) (/ keyswitch-height 2))
-                                    (/ plate-thickness 2)]))
-          left-wall (->> (cube 1.5 (+ keyswitch-height 3) plate-thickness)
-                         (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
-                                     0
-                                     (/ plate-thickness 2)]))
-          side-nub (->> (binding [*fn* 30] (cylinder 0.75 2.75))
-                        (rotate (/ π 2) [1 0 0])
-                        (translate [(+ (/ keyswitch-width 2)) 0 1])
-                        (hull (->> (cube 1.5 2.75 plate-thickness)
-                                   (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
-                                               0
-                                               (/ side-nub-thickness 2)])))
-                        (translate [0 0 (- plate-thickness side-nub-thickness)]))
-          plate-half (union top-wall left-wall (if create-side-nubs? (with-fn 100 side-nub)))]
-      (union plate-half
-             (->> plate-half
-                  (mirror [1 0 0])
-                  (mirror [0 1 0])))))
-
+  (create-single-plate {:keyswitch-height keyswitch-height
+                       :keyswitch-width keyswitch-width
+                       :sa-profile-key-height sa-profile-key-height
+                       :plate-thickness plate-thickness
+                       :side-nub-thickness side-nub-thickness
+                       :retention-tab-thickness retention-tab-thickness
+                       :create-side-nubs? create-side-nubs?}))
 
 ;;;;;;;;;;;;;;;;
 ;; SA Keycaps ;;
@@ -153,9 +143,9 @@
                        key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
                                           (extrude-linear {:height 0.1 :twist 0 :convexity 0})
                                           (translate [0 0 0.05]))
-                                     (->> (polygon [[11 6] [-11 6] [-11 -6] [11 -6]])
-                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                          (translate [0 0 12])))]
+                                    (->> (polygon [[11 6] [-11 6] [-11 -6] [11 -6]])
+                                         (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                         (translate [0 0 12])))]
                    (->> key-cap
                         (translate [0 0 (+ 5 plate-thickness)])
                         (color [240/255 223/255 175/255 1])))})
@@ -985,7 +975,9 @@
     )
 )
 
+;; Create the output directories
 (.mkdir (java.io.File. "things"))
+(.mkdir (java.io.File. "things/open"))
 
 (spit "things/open/assembled-right.scad"
       (write-scad dactyl-top-right))
